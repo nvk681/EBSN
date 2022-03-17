@@ -35,7 +35,7 @@ headings = ["event_id", "user_id", "start_time", "city", "state", "zip", "countr
 
 for index in range(len(list_of_events['event_id'])):
     selected_col = [ 
-        list_of_events['event_id'][index],
+        str(list_of_events['event_id'][index]),
         list_of_events['user_id'][index],
         list_of_events['start_time'][index],
         list_of_events['city'][index],
@@ -96,5 +96,5 @@ for key in mapped_event_details:
 
 #writing formatted data 
 cities = pd.DataFrame(mapped_event_details.values(), columns = headings)
-cities.to_csv('processed_data1.csv')
+cities.to_csv('processed_data2.csv')
 print("Hello")
