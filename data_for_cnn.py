@@ -111,9 +111,11 @@ while num < 19:
 list_of_events = pd.read_csv(data_set_path+'/random_benchmark.csv', header=0)
 user_to_event_map = {}
 file = open('data.txt', 'w')
+hash_map = {}
 for index in range(len(list_of_events['User'])):
     event_string = list_of_events['Events'][index]
     current_user_list_of_events = list(event_string[1:-1].split(','))
+    hash_map[list_of_events['User'][index]] = current_user_list_of_events
     for event in current_user_list_of_events:
         event = int(event.replace(" ", ""))
         if event in mapped_event_details:
@@ -121,11 +123,35 @@ for index in range(len(list_of_events['User'])):
             file.write(save_string)
         pass
 
-# with open('readme.txt', 'w') as f:
-#     f.write('Create a new text file!')
+list_of_events = pd.read_csv(data_set_path+'/train.csv', header=0)
+for index in range(len(list_of_events['user'])):
+    event = list_of_events['event'][index]
+    if list_of_events['user'][index] in hash_map:
+        if event in hash_map[list_of_events['user'][index]]:
+            continue
+        else:
+            hash_map[list_of_events['user'][index]].append(event)
+    # event = int(event.replace(" ", ""))
+    if event in mapped_event_details:
+        print("Here 1")
+        save_string = str(list_of_events['user'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
+        file.write(save_string)
 
 
-#writing formatted data 
-# cities = pd.DataFrame(mapped_event_details.values(), columns = headings)
-# cities.to_csv('processed_data_without_description.csv')
+list_of_events = pd.read_csv(data_set_path+'/test.csv', header=0)
+for index in range(len(list_of_events['user'])):
+    event = list_of_events['event'][index]
+    if list_of_events['user'][index] in hash_map:
+        if event in hash_map[list_of_events['user'][index]]:
+            continue
+        else:
+            hash_map[list_of_events['user'][index]].append(event)
+    # event = int(event.replace(" ", ""))
+    if event in mapped_event_details:
+        print("Here 2")
+        save_string = str(list_of_events['user'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
+        file.write(save_string)
+
+
+
 print("Hello")
