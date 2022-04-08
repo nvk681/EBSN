@@ -2,20 +2,8 @@
 import pandas as pd 
 import json
 import re
-# pip install nltk
-# import subprocess
-# subprocess.call(['pip', 'install', "nltk"])
 import nltk
-# import ssl
 
-# try:
-#     _create_unverified_https_context = ssl._create_unverified_context
-# except AttributeError:
-#     pass
-# else:
-#     ssl._create_default_https_context = _create_unverified_https_context
-
-# nltk.download()
 import string
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
@@ -52,18 +40,6 @@ headings = ["event_id", "user_id", "start_time", "city", "state", "zip", "countr
 
 
 for index in range(len(list_of_events['event_id'])):
-    # selected_col = [ 
-    #     str(list_of_events['event_id'][index]),
-    #     # list_of_events['user_id'][index],
-    #     # list_of_events['start_time'][index],
-    #     list_of_events['city'][index],
-    #     # list_of_events['state'][index],
-    #     # list_of_events['zip'][index],
-    #     # list_of_events['country'][index],
-    #     # list_of_events['lat'][index],
-    #     # list_of_events['lng'][index],
-    # ]
-    # mapped_event_details[int(list_of_events['event_id'][index])] = selected_col
     list_if_event_ids_points_of_intrest.append(int(list_of_events['event_id'][index]))
 
 
@@ -90,7 +66,6 @@ def remove_stopwords(text):
 stemmer = PorterStemmer()
 def stem_words(text):
     return " ".join([stemmer.stem(word) for word in text.split()])
-# df["text"] = df["text"].apply(lambda x: stem_words(x))
 
 
 lemmatizer = WordNetLemmatizer()
@@ -100,13 +75,12 @@ def lemmatize_words(text):
 def pre_process_text_data(text):
     text = expand_contractions(text)
     text = text.lower()
-    text = re.sub('[%s]' % re.escape(string.punctuation), '' , text)#text.apply(lambda x: re.sub('[%s]' % re.escape(string.punctuation), '' , x))
-    text = re.sub('W*dw*','', text)#text.apply(lambda x: re.sub('W*dw*','',x))
-    text = remove_stopwords(text)#.apply(lambda x: remove_stopwords(x))
-    # text = re.sub('b[w-.]+?@w+?.w{2,4}b', 'emailadd', text)#text.apply(lambda x: re.sub('b[w-.]+?@w+?.w{2,4}b', 'emailadd',x))
-    text = re.sub('(http[s]?S+)|(w+.[A-Za-z]{2,4}S*)', 'urladd', text)#text.apply(lambda x:re.sub('(http[s]?S+)|(w+.[A-Za-z]{2,4}S*)', 'urladd', x))
-    text = stem_words(text)#text.apply(lambda x: stem_words(x))
-    text = lemmatize_words(text)#text.apply(lambda text: lemmatize_words(text))
+    text = re.sub('[%s]' % re.escape(string.punctuation), '' , text)
+    text = re.sub('W*dw*','', text)
+    text = remove_stopwords(text)
+    text = re.sub('(http[s]?S+)|(w+.[A-Za-z]{2,4}S*)', 'urladd', text)
+    text = stem_words(text)
+    text = lemmatize_words(text)
     text = re.sub(' +', ' ', text)
     return text
 
@@ -122,36 +96,16 @@ while num < 19:
                 
                 name = remove_tags(temp_storage["name"])
                 descrition = "" if "description" not in temp_storage else remove_tags(temp_storage["description"])
-                # group = remove_tags(temp_storage["group"]["name"])
                 city = "NA" if "venue" not in temp_storage else remove_tags(temp_storage["venue"]["country"])
-                # state = remove_tags(temp_storage["venue"]["state"])
-                # country = remove_tags(temp_storage["venue"]["country"])
-                # lat = (temp_storage["venue"]["lat"])
-                # lon = (temp_storage["venue"]["lon"])
                 print("Event ID: ", event_id)
-                # print("Name: ", name)
-                # print("Description: ", descrition)
-                # print("Group Name: ", group)
-                # event_details = mapped_event_details[event_id]
-                # event_details[3] = city
-                # event_details[4] = state
-                # event_details[6] = country
-                # event_details[7] = lat
-                # event_details[8] = lon
                 event_details = name + descrition
                 print("Before: ", event_details)
-                # event_details = event_details + [name, group]
                 event_details = pre_process_text_data(event_details)
                 print("After: ", event_details)
                 mapped_event_details[event_id] = [city, event_details]
         except:
             print("An exception occurred")
     num += 1
-
-# for key in mapped_event_details:
-#     if len(mapped_event_details[key]) == 9:
-#         mapped_event_details[key] = mapped_event_details[key] + ["", ""]
-
 
 # Creating data for CNN random_benchmark.csv
 list_of_events = pd.read_csv(data_set_path+'/random_benchmark.csv', header=0)
