@@ -30,6 +30,7 @@ def binary_search(arr, low, high, x):
         return -1
  
 
+
 data_set_path = "./dataset/event-recommendation-engine-challenge"
 list_of_events = pd.read_csv(data_set_path+'/events.csv.gz', header=0)
 
@@ -72,6 +73,8 @@ lemmatizer = WordNetLemmatizer()
 def lemmatize_words(text):
     return " ".join([lemmatizer.lemmatize(word) for word in text.split()])
 
+empty_events = []
+
 def pre_process_text_data(text):
     text = expand_contractions(text)
     text = text.lower()
@@ -84,6 +87,11 @@ def pre_process_text_data(text):
     text = re.sub(' +', ' ', text)
     return text
 
+temporary_events = []
+temporary_map = {}
+last_selected = 0
+event_data_map = {}
+
 while num < 19:
     temp_file_number = "" if num == 0 else str(num)
     for line in open(data_set_path+'/json/events'+temp_file_number+'.json', 'r'):
@@ -91,12 +99,13 @@ while num < 19:
             temp_storage = json.loads(line)
             event_id = int(temp_storage["event_url"].split('/')[-2])
             result = binary_search(list_if_event_ids_points_of_intrest, 0, len(list_if_event_ids_points_of_intrest)-1, event_id)
-            if result != -1:
+            if result != -1 or num == 0:
                 details_of_intrest = []
-                
+                if result == -1:
+                    temporary_events.append(event_id)
                 name = remove_tags(temp_storage["name"])
                 descrition = "" if "description" not in temp_storage else remove_tags(temp_storage["description"])
-                city = "NA" if "venue" not in temp_storage else remove_tags(temp_storage["venue"]["country"])
+                city = "NA" if "venue" not in temp_storage else remove_tags(temp_storage["venue"]["city"])
                 print("Event ID: ", event_id)
                 event_details = name + descrition
                 print("Before: ", event_details)
@@ -111,6 +120,8 @@ while num < 19:
 list_of_events = pd.read_csv(data_set_path+'/random_benchmark.csv', header=0)
 user_to_event_map = {}
 file = open('data.txt', 'w')
+file2 = open('data1.txt', 'w')
+
 hash_map = {}
 for index in range(len(list_of_events['User'])):
     event_string = list_of_events['Events'][index]
@@ -121,7 +132,13 @@ for index in range(len(list_of_events['User'])):
         if event in mapped_event_details:
             save_string = str(list_of_events['User'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
             file.write(save_string)
-        pass
+        else:
+            if event not in temporary_map:
+                temporary_map[event] = temporary_events[last_selected]
+                last_selected += 1
+            event = temporary_map[event]
+            save_string = str(list_of_events['User'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
+            file.write(save_string)
 
 list_of_events = pd.read_csv(data_set_path+'/train.csv', header=0)
 for index in range(len(list_of_events['user'])):
@@ -131,9 +148,17 @@ for index in range(len(list_of_events['user'])):
             continue
         else:
             hash_map[list_of_events['user'][index]].append(event)
-    # event = int(event.replace(" ", ""))
+    event = int(event)
     if event in mapped_event_details:
         print("Here 1")
+        save_string = str(list_of_events['user'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
+        file.write(save_string)
+    else:
+        if event not in temporary_map:
+            temporary_map[event] = temporary_events[last_selected]
+            last_selected += 1
+            last_selected = last_selected%len(temporary_events)
+        event = temporary_map[event]
         save_string = str(list_of_events['user'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
         file.write(save_string)
 
@@ -146,12 +171,63 @@ for index in range(len(list_of_events['user'])):
             continue
         else:
             hash_map[list_of_events['user'][index]].append(event)
-    # event = int(event.replace(" ", ""))
+    event = int(event)
     if event in mapped_event_details:
         print("Here 2")
         save_string = str(list_of_events['user'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
         file.write(save_string)
+    else:
+        if event not in temporary_map:
+            temporary_map[event] = temporary_events[last_selected]
+            last_selected += 1
+            last_selected = last_selected%len(temporary_events)
+        event = temporary_map[event]
+        save_string = str(list_of_events['user'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
+        file.write(save_string)
 
+list_of_events = pd.read_csv(data_set_path+'/event_popularity_benchmark_private_test_only.csv', header=0)
+
+for index in range(len(list_of_events['User'])):
+    event_string = list_of_events['Events'][index]
+    current_user_list_of_events = list(event_string[1:-1].split(','))
+    hash_map[list_of_events['User'][index]] = current_user_list_of_events
+    for event in current_user_list_of_events:
+        event = int(event.replace(" ", "")[:-1])
+        if event in mapped_event_details:
+            print("Here 3")
+            save_string = str(list_of_events['User'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
+            file.write(save_string)
+        else:
+            if event not in temporary_map:
+                temporary_map[event] = temporary_events[last_selected]
+                last_selected += 1
+                last_selected = last_selected%len(temporary_events)
+            event = temporary_map[event]
+            save_string = str(list_of_events['User'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
+            file.write(save_string)
+# public_leaderboard_solution.csv
+
+list_of_events = pd.read_csv(data_set_path+'/public_leaderboard_solution.csv', header=0)
+for index in range(len(list_of_events['User'])):
+    event_string = list_of_events['Events'][index]
+    # current_user_list_of_events = list(event_string[1:-1].split(','))
+    hash_map[list_of_events['User'][index]] = current_user_list_of_events
+    # for event in current_user_list_of_events:
+    event = int(event)
+    if event in mapped_event_details:
+        print("Here 4")
+        save_string = str(list_of_events['User'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
+        file.write(save_string)
+    else:
+        if event not in temporary_map:
+            temporary_map[event] = temporary_events[last_selected]
+            last_selected += 1
+            last_selected = last_selected%len(temporary_events)
+        event = temporary_map[event]
+        save_string = str(list_of_events['User'][index])+"::"+str(event)+"::"+str(mapped_event_details[event][0])+"::"+str(mapped_event_details[event][1])+"\n"
+        file.write(save_string)
 
 
 print("Hello")
+
+# Name, location(City, State), Data and Time 
