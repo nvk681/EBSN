@@ -30,7 +30,7 @@ list_of_events = pd.read_csv(data_set_path+'/events.csv.gz', header=0)
 
 mapped_event_details = {}
 list_if_event_ids_points_of_intrest = [] 
-headings = ["event_id", "user_id", "start_time", "city", "state", "zip", "country", "lat", "lng", "name", "description", "group_name"]
+headings = ["event_id", "user_id", "start_time", "city", "state", "zip", "country", "lat", "lng", "name", "group_name"]
 
 
 for index in range(len(list_of_events['event_id'])):
@@ -64,7 +64,7 @@ while num < 19:
                 details_of_intrest = []
                 
                 name = remove_tags(temp_storage["name"])
-                descrition = remove_tags(temp_storage["description"])
+                # descrition = remove_tags(temp_storage["description"])
                 group = remove_tags(temp_storage["group"]["name"])
                 city = remove_tags(temp_storage["venue"]["country"])
                 state = remove_tags(temp_storage["venue"]["state"])
@@ -82,7 +82,7 @@ while num < 19:
                 event_details[7] = lat
                 event_details[8] = lon
                 print("Before: ", event_details)
-                event_details = event_details + [name, descrition, group]
+                event_details = event_details + [name, group]
                 print("After: ", event_details)
                 mapped_event_details[event_id] = event_details
         except:
@@ -91,10 +91,10 @@ while num < 19:
 
 for key in mapped_event_details:
     if len(mapped_event_details[key]) == 9:
-        mapped_event_details[key] = mapped_event_details[key] + ["", "", ""]
+        mapped_event_details[key] = mapped_event_details[key] + ["", ""]
 
 
 #writing formatted data 
 cities = pd.DataFrame(mapped_event_details.values(), columns = headings)
-cities.to_csv('processed_data2.csv')
+cities.to_csv('processed_data_without_description.csv')
 print("Hello")
